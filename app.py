@@ -27,6 +27,15 @@ with app.app_context():
     db.create_all()
 
 
+# ---------------- AUTO ADMIN (FIRST USER) ----------------
+@app.before_request
+def make_first_user_admin():
+    user = User.query.first()
+    if user and not user.is_admin:
+        user.is_admin = True
+        db.session.commit()
+
+
 # ---------------- HOME ----------------
 @app.route("/")
 def index():
