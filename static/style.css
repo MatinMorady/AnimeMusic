@@ -1,5 +1,79 @@
 body {
+    margin: 0;
     font-family: Arial;
-    background: #111;
+    background: #0b0f1a;
     color: white;
+}
+
+.container {
+    width: 85%;
+    margin: auto;
+    text-align: center;
+    padding: 40px;
+}
+
+h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+    color: #a29bfe;
+}
+
+/* دکمه */
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background: #6c5ce7;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    margin-bottom: 30px;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background: #a29bfe;
+}
+
+/* گرید */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* کارت */
+.card {
+    background: #151a2e;
+    padding: 20px;
+    border-radius: 15px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* اسم فایل */
+.file-name {
+    margin-bottom: 10px;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+/* پلیر */
+.player {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* دانلود */
+.download {
+    display: inline-block;
+    margin-top: 5px;
+    color: #00cec9;
+    text-decoration: none;
+}
+
+.download:hover {
+    color: #81ecec;
 }
