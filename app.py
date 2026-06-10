@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Song, Like, Comment
+from models import db, User, Song, Like, Comment, Playlist, PlaylistItem
 import os, uuid
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "change-this"
+app.config["SECRET_KEY"] = "secret"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 
 db.init_app(app)
@@ -27,19 +27,23 @@ with app.app_context():
     db.create_all()
 
 
-# ---------------- AUTO ADMIN (FIRST USER) ----------------
+# ---------------- AUTO ADMIN ----------------
 @app.before_request
-def make_first_user_admin():
+def make_first_admin():
     user = User.query.first()
-    if user and not user.is_admin:
+    if user:
         user.is_admin = True
         db.session.commit()
 
 
-# ---------------- HOME ----------------
+# ---------------- HOME + SEARCH ----------------
 @app.route("/")
 def index():
-    songs = Song.query.all()
+    q = request.args.get("q")
+    if q:
+        songs = Song.query.filter(Song.title.contains(q)).all()
+    else:
+        songs = Song.query.all()
     return render_template("index.html", songs=songs)
 
 
@@ -62,11 +66,9 @@ def register():
 def login():
     if request.method == "POST":
         user = User.query.filter_by(username=request.form["username"]).first()
-
         if user and check_password_hash(user.password, request.form["password"]):
             login_user(user)
             return redirect("/")
-
     return render_template("login.html")
 
 
@@ -76,26 +78,24 @@ def logout():
     return redirect("/")
 
 
-# ---------------- UPLOAD (ADMIN ONLY) ----------------
+# ---------------- UPLOAD ----------------
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
     if not current_user.is_admin:
-        return "Access denied"
+        return "No access"
 
     if request.method == "POST":
         file = request.files["file"]
 
-        if file:
-            filename = str(uuid.uuid4()) + "_" + file.filename
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+        filename = str(uuid.uuid4()) + "_" + file.filename
+        file.save(os.path.join(UPLOAD_FOLDER, filename))
 
-            song = Song(filename=filename, title=file.filename)
-            db.session.add(song)
-            db.session.commit()
+        song = Song(title=file.filename, filename=filename)
+        db.session.add(song)
+        db.session.commit()
 
         return redirect("/")
-
     return render_template("upload.html")
 
 
@@ -106,8 +106,10 @@ def song(song_id):
     song.views += 1
     db.session.commit()
 
+    likes = Like.query.filter_by(song_id=song_id).count()
     comments = Comment.query.filter_by(song_id=song_id).all()
-    return render_template("song.html", song=song, comments=comments)
+
+    return render_template("song.html", song=song, likes=likes, comments=comments)
 
 
 # ---------------- LIKE ----------------
@@ -115,11 +117,9 @@ def song(song_id):
 @login_required
 def like(song_id):
     exist = Like.query.filter_by(user_id=current_user.id, song_id=song_id).first()
-
     if not exist:
         db.session.add(Like(user_id=current_user.id, song_id=song_id))
         db.session.commit()
-
     return redirect(f"/song/{song_id}")
 
 
@@ -135,6 +135,19 @@ def comment(song_id):
     db.session.add(c)
     db.session.commit()
     return redirect(f"/song/{song_id}")
+
+
+# ---------------- PLAYLIST ----------------
+@app.route("/playlist", methods=["GET", "POST"])
+@login_required
+def playlist():
+    if request.method == "POST":
+        p = Playlist(user_id=current_user.id, name=request.form["name"])
+        db.session.add(p)
+        db.session.commit()
+
+    playlists = Playlist.query.filter_by(user_id=current_user.id).all()
+    return render_template("playlist.html", playlists=playlists)
 
 
 # ---------------- DOWNLOAD ----------------
