@@ -1,0 +1,19 @@
+<h1>{{ song.title }}</h1>
+
+<p>Views: {{ song.views }}</p>
+
+<a href="/like/{{ song.id }}">Like</a>
+<a href="/download/{{ song.filename }}">Download</a>
+
+<h3>Comments</h3>
+
+<form method="POST" action="/comment/{{ song.id }}">
+    <input name="text">
+    <button>Send</button>
+</form>
+
+<ul>
+{% for c in comments %}
+    <li>{{ c.text }}</li>
+{% endfor %}
+</ul>
