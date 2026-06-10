@@ -1,27 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Anime Music Site</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Anime Music</title>
 </head>
 <body>
 
-<div class="container">
+<h1>Anime Music Site</h1>
 
-    <h1>Anime Music</h1>
+<a href="/upload">Upload</a>
 
-    <a class="btn" href="/upload">Upload Music</a>
-
-    <div class="grid">
-        {% for file in files %}
-        <div class="card">
-            <div class="file-name">{{ file }}</div>
-            <a class="download" href="/download/{{ file }}">Download</a>
-        </div>
-        {% endfor %}
-    </div>
-
-</div>
+<ul>
+    {% for file in files %}
+        <li>
+            {{ file }}
+            <a href="/download/{{ file }}">Download</a>
+        </li>
+    {% endfor %}
+</ul>
 
 </body>
 </html>
